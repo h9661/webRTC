@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Realtime communication with WebRTC</title>
+
+  <!-- css -->
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+
+    video {
+      max-width: 100%;
+      width: 320px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <h1>Realtime communication with WebRTC</h1>
+
+  <video autoplay playsinline></video>
+
+  <script>
+    'use strict';
+
+    const localVideo = document.querySelector('video');
+    let localStream;
+
+    navigator.mediaDevices.getUserMedia({
+      video: true
+    })
+      .then((stream) => {
+        localVideo.srcObject = stream;
+        localStream = stream;
+      })
+      .catch((error) => {
+        console.error('mediaDevice.getUserMedia() error:', error);
+        return;
+      })
+  </script>
+</body>
+
+</html>
