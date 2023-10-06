@@ -4,6 +4,21 @@ https://github.com/googlecodelabs/webrtc-web
 
 실시간 화상 채팅을 내 프로젝트에 접목하기 위해 webRTC를 학습하는 레포
 
+1단계는 카메라에서 비디오를 추출하는 예제,
+2단계는 RTCPeerConnection을 이용하여 대화상대에게 비디오를 제공하는 예제 (네트워크없이)
+3단계는 RTCDataChannel을 이용하여 데이터를 주고 받는 예제
+4단계는 서버를 이용하여 메시지를 주고 받는 예제 (signaling)
+5단계는 네트워크 상에서 비디오를 주고 받는 예제
+6단계는 이미지(데이터)를 공유(제공)하는 예제 이다.
+
+여기에 더불어,
+
+https://forest71.tistory.com/211
+
+이 글을 공부해서
+
+SSL, 서버를 계속 연결하게, 오디오도 함께 제공하게 하는 것을 목표로 한다.
+
 # 학습 정리
 
 ## navigator
@@ -32,7 +47,7 @@ JavaScript에서 `navigator` 객체는 웹 브라우저의 정보와 상태를 �
 
 이것은 일부 중요한 `navigator` 객체의 프로퍼티와 메서드에 대한 간략한 설명입니다. `navigator` 객체를 사용하여 브라우저의 환경 및 사용자 기기에 관한 정보를 얻고, 웹 애플리케이션을 개발할 때 이 정보를 활용할 수 있습니다.
 
-## <video> `srcObject` property
+## `<video>` `srcObject` property
 
 `<video>` 태그의 `srcObject` 속성은 미디어 스트림을 설정하거나 변경하는 데 사용됩니다. 이 속성을 통해 JavaScript에서 동적으로 미디어 스트림을 `<video>` 요소에 할당할 수 있습니다. `srcObject` 속성은 미디어 스트림 객체를 값으로 받습니다.
 
