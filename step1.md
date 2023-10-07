@@ -1,72 +1,114 @@
-# webRTC
+## Getting started with media devices
 
-https://github.com/googlecodelabs/webrtc-web
+`navigator.mediaDevices.getUserMedia` is the main entry point for accessing media devices. It returns a promise that resolves to a `MediaStream` object. The `MediaStream` object represents a stream of media content. A stream consists of several tracks such as video or audio tracks. Each track is represented by a `MediaStreamTrack` object.
 
-실시간 화상 채팅을 내 프로젝트에 접목하기 위해 webRTC를 학습하는 레포
-
-1단계는 카메라에서 비디오를 추출하는 예제,
-2단계는 RTCPeerConnection을 이용하여 대화상대에게 비디오를 제공하는 예제 (네트워크없이)
-3단계는 RTCDataChannel을 이용하여 데이터를 주고 받는 예제
-4단계는 서버를 이용하여 메시지를 주고 받는 예제 (signaling)
-5단계는 네트워크 상에서 비디오를 주고 받는 예제
-6단계는 이미지(데이터)를 공유(제공)하는 예제 이다.
-
-여기에 더불어,
-
-https://forest71.tistory.com/211
-
-이 글을 공부해서
-
-SSL, 서버를 계속 연결하게, 오디오도 함께 제공하게 하는 것을 목표로 한다.
-
-# 학습 정리
-
-## navigator
-
-JavaScript에서 `navigator` 객체는 웹 브라우저의 정보와 상태를 제공하는 객체입니다. 이 객체는 다양한 프로퍼티와 메서드를 포함하고 있습니다. 여기에 몇 가지 중요한 `navigator` 객체의 프로퍼티와 메서드를 설명하겠습니다.
-
-중요한 `navigator` 프로퍼티:
-
-1. `navigator.userAgent`: 이 프로퍼티는 현재 웹 브라우저의 User-Agent 문자열을 반환합니다. 이 문자열은 브라우저의 종류와 버전 정보를 포함합니다.
-
-2. `navigator.platform`: 이 프로퍼티는 현재 플랫폼(운영 체제) 정보를 제공합니다.
-
-3. `navigator.language` 또는 `navigator.languages`: 이 프로퍼티(또는 메서드)는 사용자의 언어 환경 정보를 반환합니다.
-
-4. `navigator.cookieEnabled`: 이 프로퍼티는 브라우저가 쿠키를 활성화했는지 여부를 나타내는 부울 값을 가집니다.
-
-중요한 `navigator` 메서드:
-
-1. `navigator.geolocation.getCurrentPosition()`: 이 메서드를 사용하면 사용자의 현재 위치 정보를 얻을 수 있습니다. 위치 정보는 콜백 함수를 통해 제공됩니다.
-
-2. `navigator.mediaDevices.getUserMedia()`: 이 메서드는 웹 카메라와 마이크 같은 미디어 장치에 접근하기 위해 사용됩니다. 사용자에게 미디어 액세스 권한을 요청하고 스트림을 가져올 수 있습니다.
-
-3. `navigator.clipboard.writeText()`: 이 메서드를 사용하여 클립보드에 텍스트를 복사하는 기능을 제공할 수 있습니다. 사용자의 동의가 필요할 수 있습니다.
-
-4. `navigator.serviceWorker.register()`: Progressive Web App (PWA)에서 사용되는 메서드로, 서비스 워커를 등록하여 오프라인 작동 및 백그라운드 작업을 지원합니다.
-
-이것은 일부 중요한 `navigator` 객체의 프로퍼티와 메서드에 대한 간략한 설명입니다. `navigator` 객체를 사용하여 브라우저의 환경 및 사용자 기기에 관한 정보를 얻고, 웹 애플리케이션을 개발할 때 이 정보를 활용할 수 있습니다.
-
-## `<video>` `srcObject` property
-
-`<video>` 태그의 `srcObject` 속성은 미디어 스트림을 설정하거나 변경하는 데 사용됩니다. 이 속성을 통해 JavaScript에서 동적으로 미디어 스트림을 `<video>` 요소에 할당할 수 있습니다. `srcObject` 속성은 미디어 스트림 객체를 값으로 받습니다.
-
-예를 들어, 웹캠의 비디오 스트림을 `<video>` 요소에 표시하려면 다음과 같이 사용할 수 있습니다:
-
-```javascript
-// HTML 요소 가져오기
-const videoElement = document.querySelector("video");
-
-// 웹캠의 비디오 스트림 가져오기
+```js
 navigator.mediaDevices
-  .getUserMedia({ video: true })
-  .then((stream) => {
-    // 비디오 스트림을 <video> 요소의 srcObject에 할당
-    videoElement.srcObject = stream;
+  .getUserMedia(constraints)
+  .then(function (mediaStream) {
+    var video = document.querySelector("video");
+    video.srcObject = mediaStream;
+    video.onloadedmetadata = function (e) {
+      video.play();
+    };
   })
-  .catch((error) => {
-    console.error("비디오 스트림을 가져오는 동안 오류가 발생했습니다: ", error);
+  .catch(function (err) {
+    console.log(err.name + ": " + err.message);
+  }); // always check for errors at the end.
+```
+
+## Querying media devices
+
+The `MediaDevices` interface provides methods for querying connected media devices. The `MediaDevices.enumerateDevices()` method returns a promise that resolves to an array of `MediaDeviceInfo` objects. Each `MediaDeviceInfo` object represents a connected media device such as a microphone, a camera, or a speaker. The `MediaDeviceInfo` object contains information about the device such as the device ID, label, and kind.
+
+```js
+navigator.mediaDevices
+  .enumerateDevices()
+  .then(function (devices) {
+    devices.forEach(function (device) {
+      console.log(device.kind + ": " + device.label + " id = " + device.deviceId);
+    });
+  })
+  .catch(function (err) {
+    console.log(err.name + ": " + err.message);
   });
 ```
 
-이렇게 하면 웹캠의 비디오 스트림이 `<video>` 요소에 표시됩니다. `srcObject`를 사용하면 동적으로 비디오 스트림을 변경하거나 다른 미디어 스트림을 할당할 수 있으므로 실시간 비디오 스트림 처리나 웹RTC 기능을 구현할 때 유용합니다.
+## Listening for devices changes
+
+Most computers support plugging in various devices during runtime. It could be a webcam connected by USB, a Bluetooth headset, or a set of external speakers. In order to properly support this, a web application should listen for the changes of media devices. This can be done by adding a listener to `navigator.mediaDevices` for the `devicechange` event.
+
+```js
+// Updates the select element with the provided set of cameras
+function updateCameraList(cameras) {
+  const listElement = document.querySelector("select#availableCameras");
+  listElement.innerHTML = "";
+  cameras
+    .map((camera) => {
+      const cameraOption = document.createElement("option");
+      cameraOption.label = camera.label;
+      cameraOption.value = camera.deviceId;
+    })
+    .forEach((cameraOption) => listElement.add(cameraOption));
+}
+
+// Fetch an array of devices of a certain type
+async function getConnectedDevices(type) {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  return devices.filter((device) => device.kind === type);
+}
+
+// Get the initial set of cameras connected
+const videoCameras = getConnectedDevices("videoinput");
+updateCameraList(videoCameras);
+
+// Listen for changes to media devices and update the list accordingly
+navigator.mediaDevices.addEventListener("devicechange", (event) => {
+  const newCameraList = getConnectedDevices("video");
+  updateCameraList(newCameraList);
+});
+```
+
+## Media Constraints
+
+```js
+async function getConnectedDevices(type) {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  return devices.filter((device) => device.kind === type);
+}
+
+// Open camera with at least minWidth and minHeight capabilities
+async function openCamera(cameraId, minWidth, minHeight) {
+  const constraints = {
+    audio: { echoCancellation: true },
+    video: {
+      deviceId: cameraId,
+      width: { min: minWidth },
+      height: { min: minHeight },
+    },
+  };
+
+  return await navigator.mediaDevices.getUserMedia(constraints);
+}
+
+const cameras = getConnectedDevices("videoinput");
+if (cameras && cameras.length > 0) {
+  // Open first available video camera with a resolution of 1280x720 pixels
+  const stream = openCamera(cameras[0].deviceId, 1280, 720);
+}
+```
+
+## local playback
+
+```js
+async function playVideoFromCamera() {
+  try {
+    const constraints = { video: true, audio: true };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const videoElement = document.querySelector("video#localVideo");
+    videoElement.srcObject = stream;
+  } catch (error) {
+    console.error("Error opening video camera.", error);
+  }
+}
+```
