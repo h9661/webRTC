@@ -118,3 +118,42 @@ You should see your copy of FirebaseRTC which has been connected to your Firebas
 The app has automatically connected to your Firebase project.
 
 ## 6. Creating a new Room
+
+이 애플리케이션에서는 각 영상 채팅 세션을 방이라고 합니다. 사용자는 애플리케이션에서 버튼을 클릭하여 새 방을 만들 수 있습니다. 그러면 원격 상대방이 동일한 방에 참여하는 데 사용할 수 있는 ID가 생성됩니다. ID는 각 방의 Cloud Firestore에서 키로 사용됩니다.
+
+각 방에는 제안과 답변 모두에 대한 `RTCSessionDescriptions`과 각 당사자의 ICE 후보자가 포함된 두 개의 별도 컬렉션이 포함됩니다.
+
+첫 번째 작업은 발신자의 초기 제안을 사용하여 새 방을 만들기 위해 누락된 코드를 구현하는 것입니다. `public/app.js`를 열고 `// Add code for create a room here` 주석을 찾아 다음 코드를 추가합니다.
+
+```javascript
+const offer = await peerConnection.createOffer();
+await peerConnection.setLocalDescription(offer);
+
+const roomWithOffer = {
+  offer: {
+    type: offer.type,
+    sdp: offer.sdp,
+  },
+};
+const roomRef = await db.collection("rooms").add(roomWithOffer);
+const roomId = roomRef.id;
+document.querySelector("#currentRoom").innerText = `Current room is ${roomId} - You are the caller!`;
+```
+
+첫 번째 줄은 호출자의 제안을 나타내는 `RTCSessionDescription`을 생성합니다. 그런 다음 이는 로컬 설명으로 설정되고 마지막으로 Cloud Firestore의 새 방 개체에 기록됩니다.
+
+다음으로, 데이터베이스의 변경 사항을 수신하고 호출 수신자의 답변이 추가된 시기를 감지합니다.
+
+```javascript
+roomRef.onSnapshot(async (snapshot) => {
+  console.log("Got updated room:", snapshot.data());
+  const data = snapshot.data();
+  if (!peerConnection.currentRemoteDescription && data.answer) {
+    console.log("Set remote description: ", data.answer);
+    const answer = new RTCSessionDescription(data.answer);
+    await peerConnection.setRemoteDescription(answer);
+  }
+});
+```
+
+이는 호출 수신자가 응답에 대한 `RTCSessionDescription`을 작성할 때까지 기다렸다가 이를 호출자 `RTCPeerConnection`에 대한 원격 설명으로 설정합니다.
