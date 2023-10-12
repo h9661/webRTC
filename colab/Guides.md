@@ -157,3 +157,24 @@ roomRef.onSnapshot(async (snapshot) => {
 ```
 
 이는 호출 수신자가 응답에 대한 `RTCSessionDescription`을 작성할 때까지 기다렸다가 이를 호출자 `RTCPeerConnection`에 대한 원격 설명으로 설정합니다.
+
+## 7. Joining a Room
+
+다음 단계는 기존 룸에 참여하기 위한 로직을 구현하는 것입니다. 사용자는 방 참여 버튼을 클릭하고 참여할 방의 ID를 입력하여 이를 수행합니다. 여기서 귀하의 임무는 답변에 대한 `RTCSessionDescription` 생성을 구현하고 그에 따라 데이터베이스의 공간을 업데이트하는 것입니다.
+
+```javascript
+const offer = roomSnapshot.data().offer;
+await peerConnection.setRemoteDescription(offer);
+const answer = await peerConnection.createAnswer();
+await peerConnection.setLocalDescription(answer);
+
+const roomWithAnswer = {
+  answer: {
+    type: answer.type,
+    sdp: answer.sdp,
+  },
+};
+await roomRef.update(roomWithAnswer);
+```
+
+위 코드에서는 호출자로부터 제안을 추출하고 원격 설명으로 설정한 `RTCSessionDescription`을 생성하는 것부터 시작합니다. 다음으로 답변을 생성하고 이를 로컬 설명으로 설정한 후 데이터베이스를 업데이트합니다. 데이터베이스 업데이트는 호출자 측에서 `onSnapshot` 콜백을 트리거하고 호출 수신자의 응답을 기반으로 원격 설명을 설정합니다. 이로써 호출자와 호출 수신자 간의 `RTCSessionDescription` 개체 교환이 완료됩니다.

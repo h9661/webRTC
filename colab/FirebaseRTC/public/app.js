@@ -64,10 +64,6 @@ async function createRoom() {
     peerConnection.addTrack(track, localStream);
   });
 
-  // Code for creating a room below
-
-  // Code for creating a room above
-
   // Code for collecting ICE candidates below
 
   // Code for collecting ICE candidates above
@@ -133,6 +129,19 @@ async function joinRoomById(roomId) {
     });
 
     // Code for creating SDP answer below
+
+    const offer = roomSnapshot.data().offer;
+    await peerConnection.setRemoteDescription(offer);
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+
+    const roomWithAnswer = {
+      answer: {
+        type: answer.type,
+        sdp: answer.sdp,
+      },
+    };
+    await roomRef.update(roomWithAnswer);
 
     // Code for creating SDP answer above
 
