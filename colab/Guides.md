@@ -178,3 +178,32 @@ await roomRef.update(roomWithAnswer);
 ```
 
 위 코드에서는 호출자로부터 제안을 추출하고 원격 설명으로 설정한 `RTCSessionDescription`을 생성하는 것부터 시작합니다. 다음으로 답변을 생성하고 이를 로컬 설명으로 설정한 후 데이터베이스를 업데이트합니다. 데이터베이스 업데이트는 호출자 측에서 `onSnapshot` 콜백을 트리거하고 호출 수신자의 응답을 기반으로 원격 설명을 설정합니다. 이로써 호출자와 호출 수신자 간의 `RTCSessionDescription` 개체 교환이 완료됩니다.
+
+## 8. Collecting ICE Candidates
+
+호출자와 호출 수신자가 서로 연결하기 전에 WebRTC에 원격 피어에 연결하는 방법을 알려주는 ICE 후보도 교환해야 합니다. 다음 작업은 ICE 후보를 수신하고 이를 데이터베이스의 컬렉션에 추가하는 코드를 구현하는 것입니다. `CollectIceCandidates` 함수를 찾아 다음 코드를 추가하세요.
+
+```javascript
+async function collectIceCandidates(roomRef, peerConnection,
+                                    localName, remoteName) {
+    const candidatesCollection = roomRef.collection(localName);
+
+    peerConnection.addEventListener('icecandidate', event -> {
+        if (event.candidate) {
+            const json = event.candidate.toJSON();
+            candidatesCollection.add(json);
+        }
+    });
+
+    roomRef.collection(remoteName).onSnapshot(snapshot -> {
+        snapshot.docChanges().forEach(change -> {
+            if (change.type === "added") {
+                const candidate = new RTCIceCandidate(change.doc.data());
+                peerConnection.addIceCandidate(candidate);
+            }
+        });
+    })
+}
+```
+
+이 함수는 두 가지 일을 합니다. WebRTC API에서 ICE 후보를 수집하여 데이터베이스에 추가하고, 원격 피어에서 추가된 ICE 후보를 수신하여 `RTCPeerConnection` 인스턴스에 추가합니다. 데이터베이스 변경 사항을 들을 때 새로 추가되지 않은 항목을 필터링하는 것이 중요합니다. 그렇지 않으면 동일한 ICE 후보 세트를 계속해서 추가했을 것이기 때문입니다.

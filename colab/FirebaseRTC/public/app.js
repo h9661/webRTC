@@ -66,6 +66,8 @@ async function createRoom() {
 
   // Code for collecting ICE candidates below
 
+  collectIceCandidates(roomRef, peerConnection, "callerCandidates", "calleeCandidates");
+
   // Code for collecting ICE candidates above
 
   peerConnection.addEventListener("track", (event) => {
@@ -75,14 +77,6 @@ async function createRoom() {
       remoteStream.addTrack(track);
     });
   });
-
-  // Listening for remote session description below
-
-  // Listening for remote session description above
-
-  // Listen for remote ICE candidates below
-
-  // Listen for remote ICE candidates above
 }
 
 function joinRoom() {
@@ -118,6 +112,8 @@ async function joinRoomById(roomId) {
 
     // Code for collecting ICE candidates below
 
+    collectIceCandidates(roomRef, peerConnection, "calleeCandidates", "callerCandidates");
+
     // Code for collecting ICE candidates above
 
     peerConnection.addEventListener("track", (event) => {
@@ -144,10 +140,6 @@ async function joinRoomById(roomId) {
     await roomRef.update(roomWithAnswer);
 
     // Code for creating SDP answer above
-
-    // Listening for remote ICE candidates below
-
-    // Listening for remote ICE candidates above
   }
 }
 
@@ -223,4 +215,23 @@ function registerPeerConnectionListeners() {
   });
 }
 
+async function collectIceCandidates(roomRef, peerConnection, localName, remoteName) {
+  const candidatesCollection = roomRef.collection(localName);
+
+  peerConnection.addEventListener("icecandidate", (event) => {
+    if (event.candidate) {
+      const json = event.candidate.toJSON();
+      candidatesCollection.add(json);
+    }
+  });
+
+  roomRef.collection(remoteName).onSnapshot((snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "added") {
+        const candidate = new RTCIceCandidate(change.doc.data());
+        peerConnection.addIceCandidate(candidate);
+      }
+    });
+  });
+}
 init();
