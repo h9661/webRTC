@@ -207,3 +207,13 @@ async function collectIceCandidates(roomRef, peerConnection,
 ```
 
 이 함수는 두 가지 일을 합니다. WebRTC API에서 ICE 후보를 수집하여 데이터베이스에 추가하고, 원격 피어에서 추가된 ICE 후보를 수신하여 `RTCPeerConnection` 인스턴스에 추가합니다. 데이터베이스 변경 사항을 들을 때 새로 추가되지 않은 항목을 필터링하는 것이 중요합니다. 그렇지 않으면 동일한 ICE 후보 세트를 계속해서 추가했을 것이기 때문입니다.
+
+## 9. Conclusion
+
+In this codelab you learned how to implement signaling for WebRTC using Cloud Firestore, as well as how to use that for creating a simple video chat application.
+
+To learn more, visit the following resources:
+
+1. FirebaseRTC Source Code(https://github.com/webrtc/FirebaseRTC)
+2. WebRTC samples(https://webrtc.github.io/samples)
+3. Cloud Firestore(https://firebase.google.com/docs/firestore/)
